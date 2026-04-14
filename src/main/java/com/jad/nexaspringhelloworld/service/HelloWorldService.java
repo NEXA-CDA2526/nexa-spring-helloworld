@@ -33,4 +33,12 @@ public class HelloWorldService {
                 .map(this.helloworldMapper::entityToDto)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public HelloWorldDto findByIdLanguage(final Integer idLanguage) {
+        return this.helloworldRepository
+                .findByIdLanguage(idLanguage)
+                .map(this.helloworldMapper::entityToDto)
+                .orElseThrow(() -> new RessourceNotFoundException("Helloworld not found for id = " + idLanguage));
+    }
 }

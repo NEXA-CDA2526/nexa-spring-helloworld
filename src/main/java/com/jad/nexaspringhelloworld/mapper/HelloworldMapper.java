@@ -9,6 +9,6 @@ import org.mapstruct.Mapping;
 public interface HelloworldMapper {
     @Mapping(target = "id", source = "helloworldEntity.id")
     @Mapping(target = "value", source = "helloworldEntity.value")
-    @Mapping(target = "idLanguage", source = "helloworldEntity.language.id")
+    @Mapping(target = "idLanguage", source = "helloworldEntity.languageEntity.id")
     HelloWorldDto entityToDto(HelloworldEntity helloworldEntity);
 }

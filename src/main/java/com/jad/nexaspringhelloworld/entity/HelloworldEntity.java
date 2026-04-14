@@ -18,5 +18,5 @@ public class HelloworldEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_language", nullable = false)
-    private LanguageEntity language;
+    private LanguageEntity languageEntity;
 }
