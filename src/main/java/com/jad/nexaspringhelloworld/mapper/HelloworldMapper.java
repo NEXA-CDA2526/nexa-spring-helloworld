@@ -7,7 +7,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface HelloworldMapper {
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "value", source = "entity.value")
-    HelloWorldDto entityToDto(HelloworldEntity entity);
+    @Mapping(target = "id", source = "helloworldEntity.id")
+    @Mapping(target = "value", source = "helloworldEntity.value")
+    @Mapping(target = "idLanguage", source = "helloworldEntity.language.id")
+    HelloWorldDto entityToDto(HelloworldEntity helloworldEntity);
 }

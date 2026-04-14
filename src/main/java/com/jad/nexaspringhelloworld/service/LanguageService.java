@@ -1,0 +1,37 @@
+package com.jad.nexaspringhelloworld.service;
+
+import com.jad.nexaspringhelloworld.dto.LanguageDto;
+import com.jad.nexaspringhelloworld.mapper.LanguageMapper;
+import com.jad.nexaspringhelloworld.repository.LanguageRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class LanguageService {
+    private final LanguageRepository languageRepository;
+    private final LanguageMapper languageMapper;
+
+    public LanguageService(final LanguageRepository languageRepository, final LanguageMapper languageMapper) {
+        this.languageRepository = languageRepository;
+        this.languageMapper = languageMapper;
+    }
+
+    @Transactional(readOnly = true)
+    public List<LanguageDto> findAll() {
+        return this.languageRepository
+                .findAll()
+                .stream()
+                .map(this.languageMapper::entityToDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public LanguageDto findById(final Integer id) {
+        return this.languageRepository
+                .findById(id)
+                .map(this.languageMapper::entityToDto)
+                .orElseThrow(() -> new RessourceNotFoundException("Language not found: " + id));
+    }
+}

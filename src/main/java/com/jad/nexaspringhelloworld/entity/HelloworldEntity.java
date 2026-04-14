@@ -1,9 +1,6 @@
 package com.jad.nexaspringhelloworld.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
 
@@ -18,4 +15,8 @@ public class HelloworldEntity {
 
     @Column(name = "value", nullable = false, length = 255)
     private String value;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_language", nullable = false)
+    private LanguageEntity language;
 }

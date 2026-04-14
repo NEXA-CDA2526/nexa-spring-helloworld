@@ -1,7 +1,8 @@
 package com.jad.nexaspringhelloworld.dto;
 
 public record HelloWorldDto(Integer id,
-                            String value) {
+                            String value,
+                            Integer idLanguage) {
 
 }
 
