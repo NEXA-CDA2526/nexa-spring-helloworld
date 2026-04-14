@@ -1,0 +1,74 @@
+@startuml
+ title Sequence API HelloWorld (findAll puis findById)
+ autonumber
+
+ boundary Client
+ control "HelloWorldController" as Controller
+ entity "HelloWorldService" as Service
+ database "HelloworldRepository" as Repo
+ entity "HelloworldMapper" as Mapper
+ participant "<<Exception>> GlobalExceptionHandler" as ExceptionHandler
+
+ group Sequence 1 - GET /api/hello (findAll)
+ Client -> Controller: GET /api/hello
+ activate Controller
+
+ Controller -> Service: findAll()
+ activate Service
+
+ Service -> Repo: findAll()
+ activate Repo
+ Repo --> Service: List<HelloworldEntity>
+ deactivate Repo
+
+ loop pour chaque HelloworldEntity
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+ end
+
+ Service --> Controller: List<HelloWorldDto>
+ deactivate Service
+ Controller --> Client: 200 OK\nResponseEntity<List<HelloWorldDto>>
+ deactivate Controller
+ end
+
+ group Sequence 2 - GET /api/hello/{id} (findById)
+ Client -> Controller: GET /api/hello/{id}
+ activate Controller
+
+ Controller -> Service: findById(id)
+ activate Service
+
+ Service -> Repo: findById(id)
+ activate Repo
+ Repo --> Service: Optional<HelloworldEntity>
+ deactivate Repo
+
+ alt Entite trouvee
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+
+  Service --> Controller: HelloWorldDto
+  deactivate Service
+  Controller --> Client: 200 OK\nResponseEntity<HelloWorldDto>
+ else Entite introuvable
+  Service --> Controller: throw RessourceNotFoundException
+  deactivate Service
+  create ExceptionHandler
+  Controller -> ExceptionHandler: new GlobalExceptionHandler(ressourceNotFoundException)
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String, Object>>\n{timestamp, status, message}
+  deactivate ExceptionHandler
+
+  Controller --> Client: 404 Not Found\nResponseEntity<Map<String, Object>>
+ end
+
+ deactivate Controller
+ end
+@enduml
+
