@@ -28,21 +28,27 @@ public class LanguageController {
         return ResponseEntity.ok(this.languageService.findAll());
     }
 
-    @PostMapping(path = "/add", consumes = "application/json")
+    @PostMapping(consumes = "application/json")
     public ResponseEntity<Void> create(@RequestBody LanguageCreateRequest languageCreateRequest) {
         this.languageService.create(languageCreateRequest.name());
         return ResponseEntity.created(URI.create("api/language/add")).build();
     }
 
-    @PutMapping(path = "/update", consumes = "application/json")
-    public ResponseEntity<Void> create(@RequestBody LanguageDto languageDto) {
+    @PutMapping(consumes = "application/json")
+    public ResponseEntity<Void> update(@RequestBody LanguageDto languageDto) {
         this.languageService.update(languageDto.id(), languageDto.name());
         return ResponseEntity.accepted().build();
     }
 
-//    @DeleteMapping(path = "/delete")
-//    public ResponseEntity<Void> create(@PathVariable Integer id) {
-//        this.languageService.delete(id);
-//        return ResponseEntity.accepted().build();
-//    }
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        this.languageService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<Void> undelete(@PathVariable Integer id) {
+        this.languageService.undelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

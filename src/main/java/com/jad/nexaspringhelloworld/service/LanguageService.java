@@ -47,4 +47,16 @@ public class LanguageService {
         final OperationResult operationResult = this.languageRepository.update(id, name);
         if (!operationResult.success()) throw new ServiceOperationException(operationResult.message());
     }
+
+    @Transactional
+    public void delete(final Integer id) {
+        final OperationResult operationResult = this.languageRepository.delete(id);
+        if (!operationResult.success()) throw new RessourceNotFoundException(operationResult.message());
+    }
+
+    @Transactional
+    public void undelete(final Integer id) {
+        final OperationResult operationResult = this.languageRepository.undelete(id);
+        if (!operationResult.success()) throw new RessourceNotFoundException(operationResult.message());
+    }
 }
