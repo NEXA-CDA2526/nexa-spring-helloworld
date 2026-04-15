@@ -1,6 +1,7 @@
 package com.jad.nexaspringhelloworld.controller;
 
 import com.jad.nexaspringhelloworld.service.RessourceNotFoundException;
+import com.jad.nexaspringhelloworld.service.ServiceOperationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,5 +24,11 @@ public class GlobalExceptionHandler {
                 "status", status,
                 "message", message
                      );
+    }
+
+    @ExceptionHandler(ServiceOperationException.class)
+    public ResponseEntity<Map<String, Object>> handleServiceError(ServiceOperationException exception) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(this.errorBody(exception.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT.value()));
     }
 }

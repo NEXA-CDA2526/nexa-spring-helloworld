@@ -1,13 +1,12 @@
 package com.jad.nexaspringhelloworld.controller;
 
 import com.jad.nexaspringhelloworld.dto.LanguageDto;
+import com.jad.nexaspringhelloworld.dto.request.LanguageCreateRequest;
 import com.jad.nexaspringhelloworld.service.LanguageService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -19,7 +18,6 @@ public class LanguageController {
         this.languageService = languageService;
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<LanguageDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(this.languageService.findById(id));
@@ -29,4 +27,16 @@ public class LanguageController {
     public ResponseEntity<List<LanguageDto>> findAll() {
         return ResponseEntity.ok(this.languageService.findAll());
     }
+
+    @PostMapping(path = "/add", consumes = "application/json")
+    public ResponseEntity<Void> create(@RequestBody LanguageCreateRequest languageCreateRequest) {
+        this.languageService.create(languageCreateRequest.name());
+        return ResponseEntity.created(URI.create("api/language/add")).build();
+    }
+
+//    @PostMapping(path = "/update", consumes = "application/json")
+//    public ResponseEntity<Void> create(@RequestBody LanguageDto languageDto) {
+//        this.languageService.update(languageDto.id(), languageDto.name());
+//        return ResponseEntity.created(URI.create("api/language/add")).build();
+//    }
 }
