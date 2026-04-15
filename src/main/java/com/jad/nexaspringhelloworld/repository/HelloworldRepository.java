@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface HelloworldRepository extends JpaRepository<HelloworldEntity, Integer> {
     @Procedure(procedureName = "helloworld.findHellowordlByIdLanguage")
     Optional<HelloworldEntity> findByIdLanguage(@Param("_idLanguage") Integer idLanguage);
+
+    @Procedure(procedureName = "helloworld.findHellowordlByLanguageName")
+    Optional<HelloworldEntity> findByLanguageName(@Param("_languageName") String languageName);
 }

@@ -33,4 +33,9 @@ public class HelloWorldController {
     public ResponseEntity<HelloWorldDto> findByIdLanguage(@PathVariable Integer id) {
         return ResponseEntity.ok(this.helloWorldService.findByIdLanguage(id));
     }
+
+    @GetMapping("/languageName/{languageName}")
+    public ResponseEntity<HelloWorldDto> findByLangageName(@PathVariable String languageName) {
+        return ResponseEntity.ok(this.helloWorldService.findByLanguageName(languageName));
+    }
 }
