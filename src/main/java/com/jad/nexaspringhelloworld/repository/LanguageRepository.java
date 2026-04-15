@@ -13,4 +13,11 @@ public interface LanguageRepository extends JpaRepository<LanguageEntity, Intege
 
     @Procedure(procedureName = "helloworld.createLanguage", outputParameterName = "errorMessage_")
     String languageCreateProc(@Param("_languageName") String languageName);
+
+    default OperationResult update(Integer id, String name) {
+        return OperationResult.fromMessage(this.languageUpdateProc(id, name));
+    }
+
+    @Procedure(procedureName = "helloworld.updateLanguage", outputParameterName = "errorMessage_")
+    String languageUpdateProc(Integer id, String name);
 }

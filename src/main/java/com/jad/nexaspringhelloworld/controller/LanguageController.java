@@ -34,9 +34,15 @@ public class LanguageController {
         return ResponseEntity.created(URI.create("api/language/add")).build();
     }
 
-//    @PostMapping(path = "/update", consumes = "application/json")
-//    public ResponseEntity<Void> create(@RequestBody LanguageDto languageDto) {
-//        this.languageService.update(languageDto.id(), languageDto.name());
-//        return ResponseEntity.created(URI.create("api/language/add")).build();
+    @PutMapping(path = "/update", consumes = "application/json")
+    public ResponseEntity<Void> create(@RequestBody LanguageDto languageDto) {
+        this.languageService.update(languageDto.id(), languageDto.name());
+        return ResponseEntity.accepted().build();
+    }
+
+//    @DeleteMapping(path = "/delete")
+//    public ResponseEntity<Void> create(@PathVariable Integer id) {
+//        this.languageService.delete(id);
+//        return ResponseEntity.accepted().build();
 //    }
 }

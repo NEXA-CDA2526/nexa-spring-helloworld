@@ -41,4 +41,10 @@ public class LanguageService {
         final OperationResult operationResult = this.languageRepository.create(name);
         if (!operationResult.success()) throw new ServiceOperationException(operationResult.message());
     }
+
+    @Transactional
+    public void update(final Integer id, final String name) {
+        final OperationResult operationResult = this.languageRepository.update(id, name);
+        if (!operationResult.success()) throw new ServiceOperationException(operationResult.message());
+    }
 }
