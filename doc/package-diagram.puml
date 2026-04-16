@@ -1,0 +1,55 @@
+@startuml package-diagram
+!theme plain
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "com"                  as PKG_COM {}
+package "jad"                  as PKG_JAD {}
+package "nexaspringhelloworld" as PKG_APP {}
+
+package "controller"   as PKG_CONTROLLER {}
+package "service"      as PKG_SERVICE {}
+package "command"      as PKG_COMMAND {}
+package "language"     as PKG_COMMAND_LANG {}
+package "dto"          as PKG_DTO {}
+package "valueobject"  as PKG_VO {}
+package "entity"       as PKG_ENTITY {}
+package "mapper"       as PKG_MAPPER {}
+package "repository"   as PKG_REPO {}
+package "result"       as PKG_REPO_RESULT {}
+
+' ── Contenance de packages (style +--) ──
+PKG_COM     +-- PKG_JAD
+PKG_JAD     +-- PKG_APP
+
+PKG_APP     +-- PKG_CONTROLLER
+PKG_APP     +-- PKG_SERVICE
+PKG_APP     +-- PKG_COMMAND
+PKG_APP     +-- PKG_DTO
+PKG_APP     +-- PKG_VO
+PKG_APP     +-- PKG_ENTITY
+PKG_APP     +-- PKG_MAPPER
+PKG_APP     +-- PKG_REPO
+
+PKG_COMMAND +-- PKG_COMMAND_LANG
+PKG_REPO    +-- PKG_REPO_RESULT
+
+' ── Dépendances entre packages (avec directions explicites) ──
+PKG_CONTROLLER   ..right..> PKG_SERVICE      : uses
+PKG_CONTROLLER   ..down..>  PKG_COMMAND      : uses
+PKG_CONTROLLER   ..down..>  PKG_COMMAND_LANG : uses
+PKG_CONTROLLER   ..right..> PKG_DTO          : returns
+
+PKG_SERVICE      ..down..>  PKG_COMMAND_LANG : uses
+PKG_SERVICE      ..right..> PKG_DTO          : returns
+PKG_SERVICE      ..down..>  PKG_MAPPER       : uses
+PKG_SERVICE      ..down..>  PKG_REPO         : uses
+
+PKG_COMMAND      ..right..> PKG_DTO          : uses
+PKG_COMMAND_LANG ..right..> PKG_DTO          : uses
+PKG_DTO          ..down..>  PKG_VO           : uses
+PKG_MAPPER       ..down..>  PKG_ENTITY       : uses
+PKG_MAPPER       ..right..> PKG_DTO          : returns
+PKG_REPO         ..left..>  PKG_ENTITY       : manages
+
+@enduml
