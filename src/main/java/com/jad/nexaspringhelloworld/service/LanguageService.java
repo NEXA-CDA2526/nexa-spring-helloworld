@@ -6,7 +6,9 @@ import com.jad.nexaspringhelloworld.dto.LanguageId;
 import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.mapper.LanguageMapper;
 import com.jad.nexaspringhelloworld.repository.LanguageRepository;
+import com.jad.nexaspringhelloworld.repository.result.SimpleStoredProcedureResult;
 import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResult;
+import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResultWithId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +36,8 @@ public class LanguageService {
     public CommandResult<LanguageOutput> executeCommand(final LanguageCommand languageCommand) {
         return switch (languageCommand) {
             case LanguageCreateCommand command -> {
-                this.handleCreateCommand(command);
-                yield CommandResult.noPayLoad();
+                final LanguageId id = this.handleCreateCommand(command);
+                yield CommandResult.withPayLoad(this.findById(id));
             }
             case LanguageUpdateCommand command -> {
                 final LanguageId id = this.handleUpdateCommand(command);
@@ -52,34 +54,35 @@ public class LanguageService {
         };
     }
 
-    private void handleCreateCommand(final LanguageCreateCommand command) {
-        final StoredProcedureResult storedProcedureResult = this.languageRepository.create(
+    private LanguageId handleCreateCommand(final LanguageCreateCommand command) {
+        final StoredProcedureResultWithId storedProcedureResultWithId = this.languageRepository.create(
                 LanguageCommand.getName(command));
-        StoredProcedureResult.throwIfFailed(storedProcedureResult, ServiceOperationException::new);
-    }
-
-    private LanguageId handleUpdateCommand(final LanguageUpdateCommand command) {
-        final StoredProcedureResult storedProcedureResult = this.languageRepository.update(
-                LanguageCommand.getId(command),
-                LanguageCommand.getName(command));
-        StoredProcedureResult.throwIfFailed(storedProcedureResult, ServiceOperationException::new);
-        return command.id();
+        StoredProcedureResult.throwIfFailed(storedProcedureResultWithId, ServiceOperationException::new);
+        return new LanguageId(StoredProcedureResultWithId.getId(storedProcedureResultWithId));
     }
 
     private LanguageOutput findById(final LanguageId languageId) {
         return this.findById(LanguageId.getId(languageId));
     }
 
+    private LanguageId handleUpdateCommand(final LanguageUpdateCommand command) {
+        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.update(
+                LanguageCommand.getId(command),
+                LanguageCommand.getName(command));
+        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, ServiceOperationException::new);
+        return command.id();
+    }
+
     private void handleDeleteCommand(final LanguageDeleteCommand command) {
-        final StoredProcedureResult storedProcedureResult = this.languageRepository.delete(
+        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.delete(
                 LanguageCommand.getId(command));
-        StoredProcedureResult.throwIfFailed(storedProcedureResult, RessourceNotFoundException::new);
+        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
     }
 
     private void handleUndeleteCommand(final LanguageUndeleteCommand command) {
-        final StoredProcedureResult storedProcedureResult = this.languageRepository.undelete(
+        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.undelete(
                 LanguageCommand.getId(command));
-        StoredProcedureResult.throwIfFailed(storedProcedureResult, RessourceNotFoundException::new);
+        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
     }
 
     @Transactional(readOnly = true)
