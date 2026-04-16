@@ -1,6 +1,9 @@
 package com.jad.nexaspringhelloworld.service;
 
+import com.jad.nexaspringhelloworld.command.CommandResult;
+import com.jad.nexaspringhelloworld.command.language.*;
 import com.jad.nexaspringhelloworld.dto.LanguageDto;
+import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.mapper.LanguageMapper;
 import com.jad.nexaspringhelloworld.repository.LanguageRepository;
 import com.jad.nexaspringhelloworld.repository.result.OperationResult;
@@ -58,5 +61,47 @@ public class LanguageService {
     public void undelete(final Integer id) {
         final OperationResult operationResult = this.languageRepository.undelete(id);
         if (!operationResult.success()) throw new RessourceNotFoundException(operationResult.message());
+    }
+
+    public CommandResult<LanguageOutput> executeCommand(final LanguageCommand languageCommand) {
+        return switch (languageCommand) {
+            case LanguageCreateCommand command -> {
+                this.handleCreateCommand(command);
+                yield CommandResult.noPayLoad();
+            }
+            case LanguageUpdateCommand command -> {
+                this.handleUpdateCommand(command);
+                yield CommandResult.noPayLoad();
+            }
+            case LanguageDeleteCommand command -> {
+                this.handleDeleteCommand(command);
+                yield CommandResult.noPayLoad();
+            }
+            case LanguageUndeleteCommand command -> {
+                this.handleUndeleteCommand(command);
+                yield CommandResult.noPayLoad();
+            }
+        };
+    }
+
+    private void handleCreateCommand(final LanguageCreateCommand command) {
+        final OperationResult operationResult = this.languageRepository.create(LanguageCommand.getName(command));
+        OperationResult.throwIfFailed(operationResult, ServiceOperationException::new);
+    }
+
+    private void handleUpdateCommand(final LanguageUpdateCommand command) {
+        final OperationResult operationResult = this.languageRepository.update(LanguageCommand.getId(command),
+                                                                               LanguageCommand.getName(command));
+        OperationResult.throwIfFailed(operationResult, ServiceOperationException::new);
+    }
+
+    private void handleDeleteCommand(final LanguageDeleteCommand command) {
+        final OperationResult operationResult = this.languageRepository.delete(LanguageCommand.getId(command));
+        OperationResult.throwIfFailed(operationResult, RessourceNotFoundException::new);
+    }
+
+    private void handleUndeleteCommand(final LanguageUndeleteCommand command) {
+        final OperationResult operationResult = this.languageRepository.undelete(LanguageCommand.getId(command));
+        OperationResult.throwIfFailed(operationResult, RessourceNotFoundException::new);
     }
 }
