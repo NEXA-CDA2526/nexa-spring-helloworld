@@ -9,6 +9,7 @@ import com.jad.nexaspringhelloworld.dto.LanguageData;
 import com.jad.nexaspringhelloworld.dto.LanguageId;
 import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.service.LanguageService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,7 @@ public class LanguageController {
     public ResponseEntity<LanguageOutput> create(@RequestBody LanguageData languageData) {
         CommandResult<LanguageOutput> commandResult = this.languageService.executeCommand(
                 new LanguageCreateCommand(languageData));
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 CommandResult.getPayLoadAndThrowIfNull(commandResult, "Create must return a payload."));
     }
 
