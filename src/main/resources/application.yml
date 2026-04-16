@@ -3,4 +3,4 @@ spring:
     name: nexa-spring-helloworld
 
   profiles:
-    default: prod
+    default: dev

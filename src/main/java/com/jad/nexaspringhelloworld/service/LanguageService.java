@@ -2,11 +2,11 @@ package com.jad.nexaspringhelloworld.service;
 
 import com.jad.nexaspringhelloworld.command.CommandResult;
 import com.jad.nexaspringhelloworld.command.language.*;
-import com.jad.nexaspringhelloworld.dto.LanguageDto;
+import com.jad.nexaspringhelloworld.dto.LanguageId;
 import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.mapper.LanguageMapper;
 import com.jad.nexaspringhelloworld.repository.LanguageRepository;
-import com.jad.nexaspringhelloworld.repository.result.OperationResult;
+import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,44 +23,12 @@ public class LanguageService {
     }
 
     @Transactional(readOnly = true)
-    public List<LanguageDto> findAll() {
+    public List<LanguageOutput> findAll() {
         return this.languageRepository
                 .findAll()
                 .stream()
-                .map(this.languageMapper::entityToDto)
+                .map(this.languageMapper::entityToOutput)
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public LanguageDto findById(final Integer id) {
-        return this.languageRepository
-                .findById(id)
-                .map(this.languageMapper::entityToDto)
-                .orElseThrow(() -> new RessourceNotFoundException("Language not found: " + id));
-    }
-
-    @Transactional
-    public void create(final String name) {
-        final OperationResult operationResult = this.languageRepository.create(name);
-        if (!operationResult.success()) throw new ServiceOperationException(operationResult.message());
-    }
-
-    @Transactional
-    public void update(final Integer id, final String name) {
-        final OperationResult operationResult = this.languageRepository.update(id, name);
-        if (!operationResult.success()) throw new ServiceOperationException(operationResult.message());
-    }
-
-    @Transactional
-    public void delete(final Integer id) {
-        final OperationResult operationResult = this.languageRepository.delete(id);
-        if (!operationResult.success()) throw new RessourceNotFoundException(operationResult.message());
-    }
-
-    @Transactional
-    public void undelete(final Integer id) {
-        final OperationResult operationResult = this.languageRepository.undelete(id);
-        if (!operationResult.success()) throw new RessourceNotFoundException(operationResult.message());
     }
 
     public CommandResult<LanguageOutput> executeCommand(final LanguageCommand languageCommand) {
@@ -70,8 +38,8 @@ public class LanguageService {
                 yield CommandResult.noPayLoad();
             }
             case LanguageUpdateCommand command -> {
-                this.handleUpdateCommand(command);
-                yield CommandResult.noPayLoad();
+                final LanguageId id = this.handleUpdateCommand(command);
+                yield CommandResult.withPayLoad(this.findById(id));
             }
             case LanguageDeleteCommand command -> {
                 this.handleDeleteCommand(command);
@@ -85,23 +53,40 @@ public class LanguageService {
     }
 
     private void handleCreateCommand(final LanguageCreateCommand command) {
-        final OperationResult operationResult = this.languageRepository.create(LanguageCommand.getName(command));
-        OperationResult.throwIfFailed(operationResult, ServiceOperationException::new);
+        final StoredProcedureResult storedProcedureResult = this.languageRepository.create(
+                LanguageCommand.getName(command));
+        StoredProcedureResult.throwIfFailed(storedProcedureResult, ServiceOperationException::new);
     }
 
-    private void handleUpdateCommand(final LanguageUpdateCommand command) {
-        final OperationResult operationResult = this.languageRepository.update(LanguageCommand.getId(command),
-                                                                               LanguageCommand.getName(command));
-        OperationResult.throwIfFailed(operationResult, ServiceOperationException::new);
+    private LanguageId handleUpdateCommand(final LanguageUpdateCommand command) {
+        final StoredProcedureResult storedProcedureResult = this.languageRepository.update(
+                LanguageCommand.getId(command),
+                LanguageCommand.getName(command));
+        StoredProcedureResult.throwIfFailed(storedProcedureResult, ServiceOperationException::new);
+        return command.id();
+    }
+
+    private LanguageOutput findById(final LanguageId languageId) {
+        return this.findById(LanguageId.getId(languageId));
     }
 
     private void handleDeleteCommand(final LanguageDeleteCommand command) {
-        final OperationResult operationResult = this.languageRepository.delete(LanguageCommand.getId(command));
-        OperationResult.throwIfFailed(operationResult, RessourceNotFoundException::new);
+        final StoredProcedureResult storedProcedureResult = this.languageRepository.delete(
+                LanguageCommand.getId(command));
+        StoredProcedureResult.throwIfFailed(storedProcedureResult, RessourceNotFoundException::new);
     }
 
     private void handleUndeleteCommand(final LanguageUndeleteCommand command) {
-        final OperationResult operationResult = this.languageRepository.undelete(LanguageCommand.getId(command));
-        OperationResult.throwIfFailed(operationResult, RessourceNotFoundException::new);
+        final StoredProcedureResult storedProcedureResult = this.languageRepository.undelete(
+                LanguageCommand.getId(command));
+        StoredProcedureResult.throwIfFailed(storedProcedureResult, RessourceNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public LanguageOutput findById(final Integer id) {
+        return this.languageRepository
+                .findById(id)
+                .map(this.languageMapper::entityToOutput)
+                .orElseThrow(() -> new RessourceNotFoundException("Language not found: " + id));
     }
 }

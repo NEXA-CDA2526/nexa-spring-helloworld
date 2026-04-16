@@ -1,7 +1,13 @@
 package com.jad.nexaspringhelloworld.controller;
 
-import com.jad.nexaspringhelloworld.dto.LanguageDto;
-import com.jad.nexaspringhelloworld.dto.request.LanguageCreateRequest;
+import com.jad.nexaspringhelloworld.command.CommandResult;
+import com.jad.nexaspringhelloworld.command.language.LanguageCreateCommand;
+import com.jad.nexaspringhelloworld.command.language.LanguageDeleteCommand;
+import com.jad.nexaspringhelloworld.command.language.LanguageUndeleteCommand;
+import com.jad.nexaspringhelloworld.command.language.LanguageUpdateCommand;
+import com.jad.nexaspringhelloworld.dto.LanguageData;
+import com.jad.nexaspringhelloworld.dto.LanguageId;
+import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.service.LanguageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,36 +25,37 @@ public class LanguageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LanguageDto> findById(@PathVariable Integer id) {
+    public ResponseEntity<LanguageOutput> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(this.languageService.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<LanguageDto>> findAll() {
+    public ResponseEntity<List<LanguageOutput>> findAll() {
         return ResponseEntity.ok(this.languageService.findAll());
     }
 
     @PostMapping(consumes = "application/json")
-    public ResponseEntity<Void> create(@RequestBody LanguageCreateRequest languageCreateRequest) {
-        this.languageService.create(languageCreateRequest.name());
+    public ResponseEntity<Void> create(@RequestBody LanguageData languageData) {
+        this.languageService.executeCommand(new LanguageCreateCommand(languageData));
         return ResponseEntity.created(URI.create("api/language/add")).build();
     }
 
-    @PutMapping(consumes = "application/json")
-    public ResponseEntity<Void> update(@RequestBody LanguageDto languageDto) {
-        this.languageService.update(languageDto.id(), languageDto.name());
-        return ResponseEntity.accepted().build();
+    @PutMapping(path = "/{id}", consumes = "application/json")
+    public ResponseEntity<LanguageOutput> update(@PathVariable Integer id, @RequestBody LanguageData languageData) {
+        CommandResult<LanguageOutput> commandResult = this.languageService.executeCommand(
+                new LanguageUpdateCommand(new LanguageId(id), languageData));
+        return ResponseEntity.ok(CommandResult.getPayLoadAndThrowIfNull(commandResult, "Update must return a payload."));
     }
 
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        this.languageService.delete(id);
+        this.languageService.executeCommand(new LanguageDeleteCommand(new LanguageId(id)));
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(path = "/{id}")
     public ResponseEntity<Void> undelete(@PathVariable Integer id) {
-        this.languageService.undelete(id);
+        this.languageService.executeCommand(new LanguageUndeleteCommand(new LanguageId(id)));
         return ResponseEntity.noContent().build();
     }
 }
