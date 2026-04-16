@@ -1,15 +1,24 @@
 package com.jad.nexaspringhelloworld.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
 
 @Getter
 @Entity
 @Immutable
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(
+                name = "language.create",
+                procedureName = "helloworld.createLanguage",
+                parameters = {
+                        @StoredProcedureParameter(mode = ParameterMode.IN, type = String.class, name = "_languageName"),
+                        @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class, name = "errorMessage_"),
+                        @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "id_")
+                }
+        )
+})
+
 @Table(name = "language_view")
 public class LanguageEntity {
     @Id

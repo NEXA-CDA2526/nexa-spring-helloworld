@@ -6,6 +6,7 @@ import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResult;
 import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResultWithId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Map;
 
@@ -21,8 +22,8 @@ public interface LanguageRepository extends JpaRepository<LanguageEntity, Intege
         return StoredProcedureResult.fromMap(this.languageCreateProc(name));
     }
 
-    @Procedure(procedureName = "helloworld.createLanguage")
-    Map<String, ?> languageCreateProc(String languageName);
+    @Procedure(name = "language.create")
+    Map<String, ?> languageCreateProc(@Param("_languageName") String languageName);
 
     default SimpleStoredProcedureResult delete(Integer id) {
         return StoredProcedureResult.fromMessage(this.languageDeleteProc(id));

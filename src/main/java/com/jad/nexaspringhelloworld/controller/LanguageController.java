@@ -12,7 +12,6 @@ import com.jad.nexaspringhelloworld.service.LanguageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -35,16 +34,19 @@ public class LanguageController {
     }
 
     @PostMapping(consumes = "application/json")
-    public ResponseEntity<Void> create(@RequestBody LanguageData languageData) {
-        this.languageService.executeCommand(new LanguageCreateCommand(languageData));
-        return ResponseEntity.created(URI.create("api/language/add")).build();
+    public ResponseEntity<LanguageOutput> create(@RequestBody LanguageData languageData) {
+        CommandResult<LanguageOutput> commandResult = this.languageService.executeCommand(
+                new LanguageCreateCommand(languageData));
+        return ResponseEntity.ok(
+                CommandResult.getPayLoadAndThrowIfNull(commandResult, "Create must return a payload."));
     }
 
     @PutMapping(path = "/{id}", consumes = "application/json")
     public ResponseEntity<LanguageOutput> update(@PathVariable Integer id, @RequestBody LanguageData languageData) {
         CommandResult<LanguageOutput> commandResult = this.languageService.executeCommand(
                 new LanguageUpdateCommand(new LanguageId(id), languageData));
-        return ResponseEntity.ok(CommandResult.getPayLoadAndThrowIfNull(commandResult, "Update must return a payload."));
+        return ResponseEntity.ok(
+                CommandResult.getPayLoadAndThrowIfNull(commandResult, "Update must return a payload."));
     }
 
     @DeleteMapping(path = "/{id}")

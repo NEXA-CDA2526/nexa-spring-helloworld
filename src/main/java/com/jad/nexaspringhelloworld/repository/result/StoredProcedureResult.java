@@ -20,8 +20,10 @@ public sealed interface StoredProcedureResult
 
     static StoredProcedureResultWithId fromMap(Map<String, ?> stringMap) {
         String message = (String) stringMap.get("errorMessage_");
-        if ((message == null) || (message.isBlank())) return new StoredProcedureResultWithId(true, null, null);
-        return new StoredProcedureResultWithId(true, null, (Integer) stringMap.get("id_"));
+        if ((message == null) || (message.isBlank())) {
+            return new StoredProcedureResultWithId(true, null, (Integer) stringMap.get("id_"));
+        }
+        return new StoredProcedureResultWithId(false, message, null);
     }
 
     static void throwIfFailed(StoredProcedureResult storedProcedureResult,
