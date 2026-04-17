@@ -9,11 +9,13 @@ import com.jad.nexaspringhelloworld.repository.LanguageRepository;
 import com.jad.nexaspringhelloworld.repository.result.SimpleStoredProcedureResult;
 import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResult;
 import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResultWithId;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class LanguageService {
     private final LanguageRepository languageRepository;
@@ -26,6 +28,7 @@ public class LanguageService {
 
     @Transactional(readOnly = true)
     public List<LanguageOutput> findAll() {
+        LanguageService.log.debug("Listing all languages.");
         return this.languageRepository
                 .findAll()
                 .stream()
@@ -36,18 +39,27 @@ public class LanguageService {
     public CommandResult<LanguageOutput> executeCommand(final LanguageCommand languageCommand) {
         return switch (languageCommand) {
             case LanguageCreateCommand command -> {
+                LanguageService.log.debug("Language's creation : {}",
+                                          LanguageCommand.getName(command));
                 final LanguageId id = this.handleCreateCommand(command);
                 yield CommandResult.withPayLoad(this.findById(id));
             }
             case LanguageUpdateCommand command -> {
+                LanguageService.log.debug("Language's update : {} {}",
+                                          LanguageCommand.getId(command),
+                                          LanguageCommand.getName(command));
                 final LanguageId id = this.handleUpdateCommand(command);
                 yield CommandResult.withPayLoad(this.findById(id));
             }
             case LanguageDeleteCommand command -> {
+                LanguageService.log.debug("Language's delete : {}",
+                                          LanguageCommand.getId(command));
                 this.handleDeleteCommand(command);
                 yield CommandResult.noPayLoad();
             }
             case LanguageUndeleteCommand command -> {
+                LanguageService.log.debug("Language's undelete : {}",
+                                          LanguageCommand.getId(command));
                 this.handleUndeleteCommand(command);
                 yield CommandResult.noPayLoad();
             }
@@ -87,9 +99,11 @@ public class LanguageService {
 
     @Transactional(readOnly = true)
     public LanguageOutput findById(final Integer id) {
+        LanguageService.log.debug("Looking up language  with id={}", id);
         return this.languageRepository
                 .findById(id)
                 .map(this.languageMapper::entityToOutput)
                 .orElseThrow(() -> new RessourceNotFoundException("Language not found: " + id));
     }
+
 }

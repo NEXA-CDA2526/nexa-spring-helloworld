@@ -18,7 +18,6 @@ import org.hibernate.annotations.Immutable;
                 }
         )
 })
-
 @Table(name = "language_view")
 public class LanguageEntity {
     @Id
