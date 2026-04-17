@@ -1,0 +1,132 @@
+@startuml
+ title Sequence API HelloWorld v2
+ autonumber
+
+ actor Client
+ control "HelloWorldController" as Controller
+ control "HelloWorldService" as Service
+ database "HelloworldRepository" as Repo
+ entity "HelloworldMapper" as Mapper
+ participant "GlobalExceptionHandler" as ExceptionHandler
+
+ group Sequence 1 - GET /api/hello (findAll)
+ Client -> Controller: GET /api/hello
+ activate Controller
+
+ Controller -> Service: findAll()
+ activate Service
+ Service -> Repo: findAll()
+ activate Repo
+ Repo --> Service: List<HelloworldEntity>
+ deactivate Repo
+
+ loop pour chaque HelloworldEntity
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+ end
+
+ Service --> Controller: List<HelloWorldDto>
+ deactivate Service
+ Controller --> Client: 200 OK\nList<HelloWorldDto>
+ deactivate Controller
+ end
+
+ group Sequence 2 - GET /api/hello/{id} (findById)
+ Client -> Controller: GET /api/hello/{id}
+ activate Controller
+
+ Controller -> Service: findById(id)
+ activate Service
+ Service -> Repo: findById(id)
+ activate Repo
+ Repo --> Service: Optional<HelloworldEntity>
+ deactivate Repo
+
+ alt entite trouvee
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+  Service --> Controller: HelloWorldDto
+  deactivate Service
+  Controller --> Client: 200 OK\nHelloWorldDto
+ else entite introuvable
+  Service --> Controller: throw RessourceNotFoundException
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 3 - GET /api/hello/language/{id} (findByIdLanguage)
+ Client -> Controller: GET /api/hello/language/{id}
+ activate Controller
+
+ Controller -> Service: findByIdLanguage(id)
+ activate Service
+ Service -> Repo: findByIdLanguage(_idLanguage)
+ activate Repo
+ Repo --> Service: Optional<HelloworldEntity>
+ deactivate Repo
+
+ alt entite trouvee
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+  Service --> Controller: HelloWorldDto
+  deactivate Service
+  Controller --> Client: 200 OK\nHelloWorldDto
+ else entite introuvable
+  Service --> Controller: throw RessourceNotFoundException
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 4 - GET /api/hello/languageName/{languageName} (findByLanguageName)
+ Client -> Controller: GET /api/hello/languageName/{languageName}
+ activate Controller
+
+ Controller -> Service: findByLanguageName(languageName)
+ activate Service
+ Service -> Repo: findByLanguageName(_languageName)
+ activate Repo
+ Repo --> Service: Optional<HelloworldEntity>
+ deactivate Repo
+
+ alt entite trouvee
+  Service -> Mapper: entityToDto(entity)
+  activate Mapper
+  Mapper --> Service: HelloWorldDto
+  deactivate Mapper
+  Service --> Controller: HelloWorldDto
+  deactivate Service
+  Controller --> Client: 200 OK\nHelloWorldDto
+ else entite introuvable
+  Service --> Controller: throw RessourceNotFoundException
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ end
+
+ deactivate Controller
+ end
+@enduml
+

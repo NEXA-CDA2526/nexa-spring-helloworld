@@ -5,6 +5,6 @@ public record StoredProcedureResultWithId(boolean success,
                                           Integer id) implements StoredProcedureResult {
 
     public static Integer getId(final StoredProcedureResultWithId storedProcedureResultWithId) {
-        return storedProcedureResultWithId.id;
+        return storedProcedureResultWithId.id();
     }
 }
