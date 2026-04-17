@@ -1,9 +1,6 @@
 package com.jad.nexaspringhelloworld.repository.result;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
-import java.util.function.Function;
 
 
 public sealed interface StoredProcedureResult
@@ -29,19 +26,7 @@ public sealed interface StoredProcedureResult
         return new StoredProcedureResultWithId(false, message, null);
     }
 
-    static void throwIfFailed(StoredProcedureResult storedProcedureResult,
-                              Function<String, ? extends RuntimeException> exceptionFactory) {
-        if (!storedProcedureResult.success()) {
-            LogHolder.log.error(storedProcedureResult.message());
-            throw exceptionFactory.apply(storedProcedureResult.message());
-        }
-    }
-
     boolean success();
 
     String message();
-
-    @Slf4j
-    final class LogHolder {
-    }
 }

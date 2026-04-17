@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -69,7 +70,7 @@ public class LanguageService {
     private LanguageId handleCreateCommand(final LanguageCreateCommand command) {
         final StoredProcedureResultWithId storedProcedureResultWithId = this.languageRepository.create(
                 LanguageCommand.getName(command));
-        StoredProcedureResult.throwIfFailed(storedProcedureResultWithId, ServiceOperationException::new);
+        LanguageService.throwIfFailed(storedProcedureResultWithId, ServiceOperationException::new);
         return new LanguageId(StoredProcedureResultWithId.getId(storedProcedureResultWithId));
     }
 
@@ -81,20 +82,28 @@ public class LanguageService {
         final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.update(
                 LanguageCommand.getId(command),
                 LanguageCommand.getName(command));
-        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, ServiceOperationException::new);
+        LanguageService.throwIfFailed(simpleStoredProcedureResult, ServiceOperationException::new);
         return command.id();
     }
 
     private void handleDeleteCommand(final LanguageDeleteCommand command) {
         final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.delete(
                 LanguageCommand.getId(command));
-        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
+        LanguageService.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
     }
 
     private void handleUndeleteCommand(final LanguageUndeleteCommand command) {
         final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.undelete(
                 LanguageCommand.getId(command));
-        StoredProcedureResult.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
+        LanguageService.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
+    }
+
+    private static void throwIfFailed(StoredProcedureResult storedProcedureResult,
+                                      Function<String, ? extends RuntimeException> exceptionFactory) {
+        if (!storedProcedureResult.success()) {
+            LanguageService.log.error(storedProcedureResult.message());
+            throw exceptionFactory.apply(storedProcedureResult.message());
+        }
     }
 
     @Transactional(readOnly = true)
@@ -105,5 +114,4 @@ public class LanguageService {
                 .map(this.languageMapper::entityToOutput)
                 .orElseThrow(() -> new RessourceNotFoundException("Language not found: " + id));
     }
-
 }
