@@ -1,0 +1,220 @@
+@startuml
+ title Sequence API Language
+ autonumber
+
+ actor Client
+ control "LanguageController" as Controller
+ control "LanguageService" as Service
+ control "CommandResult" as CmdResult
+ database "LanguageRepository" as Repo
+ entity "LanguageMapper" as Mapper
+ participant "StoredProcedureResult" as SpResult
+ participant "GlobalExceptionHandler" as ExceptionHandler
+
+ group Sequence 1 - GET /api/language (findAll)
+ Client -> Controller: GET /api/language
+ activate Controller
+
+ Controller -> Service: findAll()
+ activate Service
+ Service -> Repo: findAll()
+ activate Repo
+ Repo --> Service: List<LanguageEntity>
+ deactivate Repo
+
+ loop pour chaque LanguageEntity
+  Service -> Mapper: entityToOutput(entity)
+  activate Mapper
+  Mapper --> Service: LanguageOutput
+  deactivate Mapper
+ end
+
+ Service --> Controller: List<LanguageOutput>
+ deactivate Service
+ Controller --> Client: 200 OK\nList<LanguageOutput>
+ deactivate Controller
+ end
+
+ group Sequence 2 - GET /api/language/{id} (findById)
+ Client -> Controller: GET /api/language/{id}
+ activate Controller
+
+ Controller -> Service: findById(id)
+ activate Service
+ Service -> Repo: findById(id)
+ activate Repo
+ Repo --> Service: Optional<LanguageEntity>
+ deactivate Repo
+
+ alt entite trouvee
+  Service -> Mapper: entityToOutput(entity)
+  activate Mapper
+  Mapper --> Service: LanguageOutput
+  deactivate Mapper
+  Service --> Controller: LanguageOutput
+  deactivate Service
+  Controller --> Client: 200 OK\nLanguageOutput
+ else entite introuvable
+  Service --> Controller: throw RessourceNotFoundException
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 3 - POST /api/language (create)
+ Client -> Controller: POST /api/language\nLanguageData
+ activate Controller
+
+ Controller -> Service: executeCommand(LanguageCreateCommand)
+ activate Service
+ Service -> Repo: create(name)
+ activate Repo
+ Repo -> Repo: languageCreateProc(_languageName)
+ Repo --> Service: StoredProcedureResultWithId
+ deactivate Repo
+
+ Service -> SpResult: throwIfFailed(result, ServiceOperationException::new)
+ alt procedure KO
+  SpResult --> Service: throw ServiceOperationException
+  Service --> Controller: exception
+  deactivate Service
+  Controller -> ExceptionHandler: handleServiceError(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 422 Unprocessable Content\nMap<String,Object>
+ else procedure OK
+  SpResult --> Service: continue
+  Service -> Service: findById(new LanguageId(id_))
+  Service -> Repo: findById(id)
+  activate Repo
+  Repo --> Service: Optional<LanguageEntity>
+  deactivate Repo
+  Service -> Mapper: entityToOutput(entity)
+  activate Mapper
+  Mapper --> Service: LanguageOutput
+  deactivate Mapper
+  Service --> Controller: CommandResult<LanguageOutput>
+  deactivate Service
+  Controller -> CmdResult: getPayLoadAndThrowIfNull(commandResult, ...)
+  CmdResult --> Controller: LanguageOutput
+  Controller --> Client: 201 Created\nLanguageOutput
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 4 - PUT /api/language/{id} (update)
+ Client -> Controller: PUT /api/language/{id}\nLanguageData
+ activate Controller
+
+ Controller -> Service: executeCommand(LanguageUpdateCommand)
+ activate Service
+ Service -> Repo: update(id, name)
+ activate Repo
+ Repo -> Repo: languageUpdateProc(id, name)
+ Repo --> Service: SimpleStoredProcedureResult
+ deactivate Repo
+
+ Service -> SpResult: throwIfFailed(result, ServiceOperationException::new)
+ alt procedure KO
+  SpResult --> Service: throw ServiceOperationException
+  Service --> Controller: exception
+  deactivate Service
+  Controller -> ExceptionHandler: handleServiceError(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 422 Unprocessable Content\nMap<String,Object>
+ else procedure OK
+  SpResult --> Service: continue
+  Service -> Service: findById(id)
+  Service -> Repo: findById(id)
+  activate Repo
+  Repo --> Service: Optional<LanguageEntity>
+  deactivate Repo
+  Service -> Mapper: entityToOutput(entity)
+  activate Mapper
+  Mapper --> Service: LanguageOutput
+  deactivate Mapper
+  Service --> Controller: CommandResult<LanguageOutput>
+  deactivate Service
+  Controller -> CmdResult: getPayLoadAndThrowIfNull(commandResult, ...)
+  CmdResult --> Controller: LanguageOutput
+  Controller --> Client: 200 OK\nLanguageOutput
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 5 - DELETE /api/language/{id} (delete)
+ Client -> Controller: DELETE /api/language/{id}
+ activate Controller
+
+ Controller -> Service: executeCommand(LanguageDeleteCommand)
+ activate Service
+ Service -> Repo: delete(id)
+ activate Repo
+ Repo -> Repo: languageDeleteProc(id)
+ Repo --> Service: SimpleStoredProcedureResult
+ deactivate Repo
+
+ Service -> SpResult: throwIfFailed(result, RessourceNotFoundException::new)
+ alt procedure KO
+  SpResult --> Service: throw RessourceNotFoundException
+  Service --> Controller: exception
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ else procedure OK
+  SpResult --> Service: continue
+  Service --> Controller: CommandResult.noPayLoad()
+  deactivate Service
+  Controller --> Client: 204 No Content
+ end
+
+ deactivate Controller
+ end
+
+ group Sequence 6 - PATCH /api/language/{id} (undelete)
+ Client -> Controller: PATCH /api/language/{id}
+ activate Controller
+
+ Controller -> Service: executeCommand(LanguageUndeleteCommand)
+ activate Service
+ Service -> Repo: undelete(id)
+ activate Repo
+ Repo -> Repo: languageUndeleteProc(id)
+ Repo --> Service: SimpleStoredProcedureResult
+ deactivate Repo
+
+ Service -> SpResult: throwIfFailed(result, RessourceNotFoundException::new)
+ alt procedure KO
+  SpResult --> Service: throw RessourceNotFoundException
+  Service --> Controller: exception
+  deactivate Service
+  Controller -> ExceptionHandler: handleNotFound(exception)
+  activate ExceptionHandler
+  ExceptionHandler --> Controller: ResponseEntity<Map<String,Object>>\n{timestamp,status,message}
+  deactivate ExceptionHandler
+  Controller --> Client: 404 Not Found\nMap<String,Object>
+ else procedure OK
+  SpResult --> Service: continue
+  Service --> Controller: CommandResult.noPayLoad()
+  deactivate Service
+  Controller --> Client: 204 No Content
+ end
+
+ deactivate Controller
+ end
+@enduml
+
