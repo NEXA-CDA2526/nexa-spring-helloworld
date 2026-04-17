@@ -6,9 +6,7 @@ import com.jad.nexaspringhelloworld.dto.LanguageId;
 import com.jad.nexaspringhelloworld.dto.LanguageOutput;
 import com.jad.nexaspringhelloworld.mapper.LanguageMapper;
 import com.jad.nexaspringhelloworld.repository.LanguageRepository;
-import com.jad.nexaspringhelloworld.repository.result.SimpleStoredProcedureResult;
-import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResult;
-import com.jad.nexaspringhelloworld.repository.result.StoredProcedureResultWithId;
+import com.jad.nexaspringhelloworld.repository.result.PersistenceOperationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,10 +66,10 @@ public class LanguageService {
     }
 
     private LanguageId handleCreateCommand(final LanguageCreateCommand command) {
-        final StoredProcedureResultWithId storedProcedureResultWithId = this.languageRepository.create(
+        final PersistenceOperationResult persistenceOperationResult = this.languageRepository.create(
                 LanguageCommand.getName(command));
-        LanguageService.throwIfFailed(storedProcedureResultWithId, ServiceOperationException::new);
-        return new LanguageId(StoredProcedureResultWithId.getId(storedProcedureResultWithId));
+        LanguageService.throwIfFailed(persistenceOperationResult, ServiceOperationException::new);
+        return new LanguageId(persistenceOperationResult.realId());
     }
 
     private LanguageOutput findById(final LanguageId languageId) {
@@ -79,30 +77,30 @@ public class LanguageService {
     }
 
     private LanguageId handleUpdateCommand(final LanguageUpdateCommand command) {
-        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.update(
+        final PersistenceOperationResult persistenceOperationResult = this.languageRepository.update(
                 LanguageCommand.getId(command),
                 LanguageCommand.getName(command));
-        LanguageService.throwIfFailed(simpleStoredProcedureResult, ServiceOperationException::new);
+        LanguageService.throwIfFailed(persistenceOperationResult, ServiceOperationException::new);
         return command.id();
     }
 
     private void handleDeleteCommand(final LanguageDeleteCommand command) {
-        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.delete(
+        final PersistenceOperationResult persistenceOperationResult = this.languageRepository.delete(
                 LanguageCommand.getId(command));
-        LanguageService.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
+        LanguageService.throwIfFailed(persistenceOperationResult, RessourceNotFoundException::new);
     }
 
     private void handleUndeleteCommand(final LanguageUndeleteCommand command) {
-        final SimpleStoredProcedureResult simpleStoredProcedureResult = this.languageRepository.undelete(
+        final PersistenceOperationResult persistenceOperationResult = this.languageRepository.undelete(
                 LanguageCommand.getId(command));
-        LanguageService.throwIfFailed(simpleStoredProcedureResult, RessourceNotFoundException::new);
+        LanguageService.throwIfFailed(persistenceOperationResult, RessourceNotFoundException::new);
     }
 
-    private static void throwIfFailed(StoredProcedureResult storedProcedureResult,
+    private static void throwIfFailed(PersistenceOperationResult persistenceOperationResult,
                                       Function<String, ? extends RuntimeException> exceptionFactory) {
-        if (!storedProcedureResult.success()) {
-            LanguageService.log.error(storedProcedureResult.message());
-            throw exceptionFactory.apply(storedProcedureResult.message());
+        if (!persistenceOperationResult.success()) {
+            LanguageService.log.error(persistenceOperationResult.message());
+            throw exceptionFactory.apply(persistenceOperationResult.message());
         }
     }
 
